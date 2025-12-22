@@ -85,7 +85,7 @@ function createWorker(queueName, processor, options = {}) {
 
   const worker = new Worker(queueName, processor, {
     connection,
-    concurrency: options.concurrency || 5,
+    concurrency: options.concurrency || 3,
     ...options,
   });
 
@@ -101,7 +101,7 @@ function createWorker(queueName, processor, options = {}) {
     logger.error(`[JobQueue] Worker ${queueName} error:`, error);
   });
 
-  logger.info(`[JobQueue] Worker ${queueName} created with concurrency ${options.concurrency || 5}`);
+  logger.info(`[JobQueue] Worker ${queueName} created with concurrency ${options.concurrency || 3}`);
   return worker;
 }
 

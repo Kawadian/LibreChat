@@ -1,7 +1,7 @@
 const { logger } = require('@librechat/data-schemas');
 const { initializeClient } = require('~/server/services/Endpoints/agents');
 const addTitle = require('~/server/services/Endpoints/agents/title');
-const { saveMessage, saveConvo } = require('~/models');
+const { saveMessage } = require('~/models');
 
 /**
  * Mock response object for non-streaming mode
@@ -68,25 +68,26 @@ async function processChatJob(job) {
   
   logger.info(`[ChatJobProcessor] Processing job ${job.id} for user ${userId}`);
   
+  // Create mock request object outside try block so it's available in catch
+  const mockReq = {
+    user: { id: userId },
+    body: {
+      ...body,
+      text,
+      conversationId,
+      endpointOption,
+    },
+    app: {
+      locals: {},
+    },
+  };
+  
   try {
     // Update progress
     await job.updateProgress(10);
 
-    // Create mock request and response objects
+    // Create mock response object
     const mockRes = new MockResponse(job.id);
-    
-    const mockReq = {
-      user: { id: userId },
-      body: {
-        ...body,
-        text,
-        conversationId,
-        endpointOption,
-      },
-      app: {
-        locals: {},
-      },
-    };
 
     // Initialize the client
     await job.updateProgress(20);
