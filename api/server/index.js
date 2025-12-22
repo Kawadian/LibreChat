@@ -30,6 +30,7 @@ const staticCache = require('./utils/staticCache');
 const noIndex = require('./middleware/noIndex');
 const { seedDatabase } = require('~/models');
 const routes = require('./routes');
+const { startChatWorker } = require('./services/Jobs');
 
 const { PORT, HOST, ALLOW_SOCIAL_LOGIN, DISABLE_COMPRESSION, TRUST_PROXY } = process.env ?? {};
 
@@ -157,6 +158,7 @@ const startServer = async () => {
 
   app.use('/api/tags', routes.tags);
   app.use('/api/mcp', routes.mcp);
+  app.use('/api/jobs', routes.jobs);
 
   app.use(ErrorController);
 
@@ -192,6 +194,9 @@ const startServer = async () => {
     await initializeMCPs();
     await initializeOAuthReconnectManager();
     await checkMigrations();
+    
+    // Start the chat job worker for async processing
+    startChatWorker({ concurrency: 3 });
   });
 };
 

@@ -24,6 +24,7 @@ const auth = require('./auth');
 const keys = require('./keys');
 const user = require('./user');
 const mcp = require('./mcp');
+const jobs = require('./jobs');
 
 module.exports = {
   mcp,
@@ -31,6 +32,7 @@ module.exports = {
   keys,
   user,
   tags,
+  jobs,
   roles,
   oauth,
   files,
