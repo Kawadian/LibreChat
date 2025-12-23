@@ -1,4 +1,3 @@
-const { v4: uuidv4 } = require('uuid');
 const { logger } = require('@librechat/data-schemas');
 const { createQueue } = require('./queueConfig');
 
@@ -26,8 +25,6 @@ class ChatJobService {
     if (!this.queue) {
       throw new Error('Job queue not available. Redis must be enabled to use async chat mode.');
     }
-
-    const jobId = uuidv4();
     
     try {
       const job = await this.queue.add(
@@ -37,12 +34,11 @@ class ChatJobService {
           submittedAt: Date.now(),
         },
         {
-          jobId,
           priority: jobData.priority || 10,
         }
       );
 
-      logger.info(`[ChatJobService] Job ${jobId} submitted for user ${jobData.userId}`);
+      logger.info(`[ChatJobService] Job ${job.id} submitted for user ${jobData.userId}`);
 
       return {
         jobId: job.id,

@@ -16,19 +16,22 @@ class MockResponse {
   }
 
   write(data) {
-    try {
-      const lines = data.toString().split('\n').filter(line => line.trim());
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const jsonStr = line.substring(6);
-          if (jsonStr !== '[DONE]') {
+    const lines = data.toString().split('\n').filter(line => line.trim());
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const jsonStr = line.substring(6);
+        if (jsonStr !== '[DONE]') {
+          try {
             const parsed = JSON.parse(jsonStr);
             this.events.push(parsed);
+          } catch (parseError) {
+            logger.error('[MockResponse] Failed to parse JSON chunk:', {
+              chunk: jsonStr.substring(0, 100), // Log first 100 chars
+              error: parseError.message,
+            });
           }
         }
       }
-    } catch (error) {
-      logger.error('[MockResponse] Failed to parse SSE data:', error);
     }
   }
 
@@ -163,10 +166,18 @@ async function processChatJob(job) {
     // Try to save error state to database if we have enough context
     try {
       if (conversationId) {
+        // Sanitize error message - avoid exposing sensitive information
+        const sanitizedError = error.message
+          ? error.message.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[email]')
+              .replace(/[a-z0-9]{32,}/gi, '[token]')
+              .replace(/sk-[a-zA-Z0-9]+/g, '[api-key]')
+              .substring(0, 200) // Limit length
+          : 'An error occurred';
+        
         const errorMessage = {
           conversationId,
           user: userId,
-          text: `[Error processing message: ${error.message}]`,
+          text: `[Error processing message: ${sanitizedError}]`,
           isCreatedByUser: false,
           error: true,
         };

@@ -4,6 +4,8 @@ const { cacheConfig } = require('@librechat/api');
 
 /**
  * Get Redis connection configuration for BullMQ
+ * Note: If multiple Redis URIs are provided (comma-separated), only the first one is used.
+ * For Redis cluster support with BullMQ, configure via REDIS_URI with proper cluster setup.
  * @returns {Object} Redis connection config
  */
 function getRedisConnection() {
@@ -17,6 +19,7 @@ function getRedisConnection() {
   const password = urls?.[0]?.password || cacheConfig.REDIS_PASSWORD;
   const ca = cacheConfig.REDIS_CA;
 
+  // Use the first Redis URI for BullMQ connection
   const connection = {
     host: urls[0]?.hostname || 'localhost',
     port: parseInt(urls[0]?.port, 10) || 6379,

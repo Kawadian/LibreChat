@@ -8,10 +8,10 @@ const {
 const {
   setHeaders,
   moderateText,
+  requireJwtAuth,
   validateConvoAccess,
   buildEndpointOption,
 } = require('~/server/middleware');
-const { requireJwtAuth } = require('~/server/middleware');
 
 const router = express.Router();
 

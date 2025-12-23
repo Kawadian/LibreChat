@@ -38,6 +38,9 @@ const request = (url, options = {}) => {
             body: JSON.parse(data),
           });
         } catch (e) {
+          // Log parsing error for debugging
+          console.warn('[Request] Failed to parse JSON response:', e.message);
+          console.warn('[Request] Raw response:', data.substring(0, 200));
           resolve({
             status: res.statusCode,
             body: data,
