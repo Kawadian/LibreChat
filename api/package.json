@@ -52,6 +52,7 @@
     "@smithy/node-http-handler": "^4.4.5",
     "axios": "^1.12.1",
     "bcryptjs": "^2.4.3",
+    "bullmq": "^5.66.2",
     "compression": "^1.8.1",
     "connect-redis": "^8.1.0",
     "cookie": "^0.7.2",
