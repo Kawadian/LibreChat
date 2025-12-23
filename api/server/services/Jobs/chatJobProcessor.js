@@ -167,11 +167,21 @@ async function processChatJob(job) {
     try {
       if (conversationId) {
         // Sanitize error message - avoid exposing sensitive information
+        // Covers various API key/token formats from different providers
         const sanitizedError = error.message
-          ? error.message.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[email]')
-              .replace(/[a-z0-9]{32,}/gi, '[token]')
-              .replace(/sk-[a-zA-Z0-9]+/g, '[api-key]')
-              .substring(0, 200) // Limit length
+          ? error.message
+              // Remove email addresses
+              .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[email]')
+              // Remove long alphanumeric strings (likely tokens)
+              .replace(/\b[a-z0-9]{32,}\b/gi, '[token]')
+              // Remove common API key formats
+              .replace(/\b(sk|pk|xoxb|xoxa|AIza|gho|ghp|ghs|ghu|github_pat|glpat)-[a-zA-Z0-9_-]+/g, '[api-key]')
+              // Remove Bearer tokens
+              .replace(/Bearer\s+[a-zA-Z0-9._-]+/g, 'Bearer [token]')
+              // Remove file paths that might contain sensitive info
+              .replace(/\/[\w./-]+\/(\.env|config|secrets)/g, '/[path]/[config]')
+              // Limit total length
+              .substring(0, 200)
           : 'An error occurred';
         
         const errorMessage = {

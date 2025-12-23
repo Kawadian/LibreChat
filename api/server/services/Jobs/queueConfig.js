@@ -14,15 +14,33 @@ function getRedisConnection() {
     return null;
   }
 
-  const urls = cacheConfig.REDIS_URI?.split(',').map((uri) => new URL(uri)) || [];
-  const username = urls?.[0]?.username || cacheConfig.REDIS_USERNAME;
-  const password = urls?.[0]?.password || cacheConfig.REDIS_PASSWORD;
+  if (!cacheConfig.REDIS_URI) {
+    logger.error('[JobQueue] REDIS_URI is not configured');
+    return null;
+  }
+
+  let urls = [];
+  try {
+    urls = cacheConfig.REDIS_URI.split(',').map((uri) => new URL(uri.trim()));
+  } catch (error) {
+    logger.error('[JobQueue] Failed to parse REDIS_URI:', error.message);
+    return null;
+  }
+
+  if (urls.length === 0) {
+    logger.error('[JobQueue] No valid Redis URIs found in REDIS_URI');
+    return null;
+  }
+
+  const firstUrl = urls[0];
+  const username = firstUrl.username || cacheConfig.REDIS_USERNAME;
+  const password = firstUrl.password || cacheConfig.REDIS_PASSWORD;
   const ca = cacheConfig.REDIS_CA;
 
   // Use the first Redis URI for BullMQ connection
   const connection = {
-    host: urls[0]?.hostname || 'localhost',
-    port: parseInt(urls[0]?.port, 10) || 6379,
+    host: firstUrl.hostname || 'localhost',
+    port: parseInt(firstUrl.port, 10) || 6379,
     username,
     password,
     ...(ca ? { tls: { ca } } : {}),
